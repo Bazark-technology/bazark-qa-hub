@@ -46,7 +46,7 @@ export async function GET() {
 
     // Compute stats for each agent
     const agentsWithStats = await Promise.all(
-      agents.map(async (agent) => {
+      agents.map(async (agent: (typeof agents)[number]) => {
         // Get aggregated stats
         const statsAgg = await prisma.testRun.aggregate({
           where: { agent_id: agent.id },
@@ -105,7 +105,7 @@ export async function GET() {
             avg_duration_ms: Math.round(statsAgg._avg.duration_ms || 0),
             is_stale: isStale,
           },
-          recent_runs: agent.test_runs.map((run) => ({
+          recent_runs: agent.test_runs.map((run: (typeof agents)[number]["test_runs"][number]) => ({
             id: run.id,
             commit_hash: run.commit_hash,
             commit_message: run.commit_message,

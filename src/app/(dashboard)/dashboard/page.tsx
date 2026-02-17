@@ -192,7 +192,7 @@ async function getDashboardData(): Promise<DashboardData> {
       yesterdayRuns,
     },
     dailyChart,
-    activeRuns: activeRuns.map((run) => {
+    activeRuns: activeRuns.map((run: (typeof activeRuns)[number]) => {
       const completed = run.test_cases.filter(
         (tc) => tc.status !== "PENDING" && tc.status !== "RUNNING"
       ).length;
@@ -210,7 +210,7 @@ async function getDashboardData(): Promise<DashboardData> {
         started_at: run.started_at.toISOString(),
       };
     }),
-    recentRuns: recentRuns.map((run) => ({
+    recentRuns: recentRuns.map((run: (typeof recentRuns)[number]) => ({
       id: run.id,
       commit_hash: run.commit_hash,
       commit_message: run.commit_message,
@@ -222,7 +222,7 @@ async function getDashboardData(): Promise<DashboardData> {
       failed: run.failed,
       started_at: run.started_at.toISOString(),
     })),
-    recentFailures: recentFailures.map((f) => ({
+    recentFailures: recentFailures.map((f: (typeof recentFailures)[number]) => ({
       id: f.id,
       title: f.title,
       bug_description: f.bug_description,
@@ -232,11 +232,11 @@ async function getDashboardData(): Promise<DashboardData> {
       agent_name: f.test_run.agent.name,
       created_at: f.created_at.toISOString(),
     })),
-    topFailingPages: failingPages.map((p) => ({
+    topFailingPages: failingPages.map((p: (typeof failingPages)[number]) => ({
       url_path: p.url_path,
       failure_count: p._count.id,
     })),
-    agents: allAgents.map((a) => ({
+    agents: allAgents.map((a: (typeof allAgents)[number]) => ({
       id: a.id,
       name: a.name,
       status: a.status,

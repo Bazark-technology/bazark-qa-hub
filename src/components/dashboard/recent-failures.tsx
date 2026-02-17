@@ -58,9 +58,9 @@ export default function RecentFailures({ failures }: RecentFailuresProps) {
       </div>
 
       <div className="space-y-3 max-h-[400px] overflow-y-auto">
-        {failures.map((failure) => {
+        {failures.map((failure: DashboardFailure) => {
           const isHighPriority = failure.priority === "HIGH" || failure.priority === "CRITICAL";
-          
+
           return (
             <Link
               key={failure.id}

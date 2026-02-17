@@ -66,14 +66,14 @@ export default function RecentRuns({ runs }: RecentRunsProps) {
       </div>
 
       <div className="divide-y divide-gray-100">
-        {runs.map((run, idx) => (
+        {runs.map((run: DashboardRecentRun, idx: number) => (
           <Link
             key={run.id}
             href={"/test-runs/" + run.id}
             className={"flex items-center gap-4 py-3 hover:bg-gray-50 -mx-2 px-2 rounded-lg transition-colors " + (idx % 2 === 1 ? "bg-gray-50/50" : "")}
           >
             <div className="flex-shrink-0">{getStatusIcon(run.status)}</div>
-            
+
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
                 <code className="text-sm font-mono text-gray-700">

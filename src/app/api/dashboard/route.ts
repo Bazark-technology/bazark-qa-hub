@@ -160,24 +160,24 @@ export async function GET() {
     ]);
 
     // Calculate today's stats
-    const todayPassed = todayRuns.filter((r) => r.status === "PASSED").length;
-    const todayFailed = todayRuns.filter((r) => r.status === "FAILED").length;
-    const todayTotalTests = todayRuns.reduce((sum, r) => sum + r.total_tests, 0);
-    const todayPassedTests = todayRuns.reduce((sum, r) => sum + r.passed, 0);
+    const todayPassed = todayRuns.filter((r: (typeof todayRuns)[number]) => r.status === "PASSED").length;
+    const todayFailed = todayRuns.filter((r: (typeof todayRuns)[number]) => r.status === "FAILED").length;
+    const todayTotalTests = todayRuns.reduce((sum, r: (typeof todayRuns)[number]) => sum + r.total_tests, 0);
+    const todayPassedTests = todayRuns.reduce((sum, r: (typeof todayRuns)[number]) => sum + r.passed, 0);
     const todayPassRate = todayTotalTests > 0 ? (todayPassedTests / todayTotalTests) * 100 : 0;
 
     // Count today's open bugs (failed test cases)
-    const todayFailedRuns = todayRuns.filter((r) => r.status === "FAILED");
-    const todayOpenBugs = todayFailedRuns.reduce((sum, r) => sum + r.failed, 0);
+    const todayFailedRuns = todayRuns.filter((r: (typeof todayRuns)[number]) => r.status === "FAILED");
+    const todayOpenBugs = todayFailedRuns.reduce((sum, r: (typeof todayRuns)[number]) => sum + r.failed, 0);
 
     // Get high priority bug count from recent failures
     const todayHighPriorityBugs = recentFailures.filter(
-      (f) => f.priority === "HIGH" || f.priority === "CRITICAL"
+      (f: (typeof recentFailures)[number]) => f.priority === "HIGH" || f.priority === "CRITICAL"
     ).length;
 
     // Group chart data by day
     const dailyMap = new Map<string, { passed: number; failed: number; total: number }>();
-    
+
     // Initialize all 14 days
     for (let i = 13; i >= 0; i--) {
       const date = format(subDays(now, i), "yyyy-MM-dd");
@@ -185,7 +185,7 @@ export async function GET() {
     }
 
     // Fill in actual data
-    chartRuns.forEach((run) => {
+    chartRuns.forEach((run: (typeof chartRuns)[number]) => {
       const date = format(new Date(run.started_at), "yyyy-MM-dd");
       const existing = dailyMap.get(date);
       if (existing) {
@@ -218,7 +218,7 @@ export async function GET() {
         yesterdayRuns,
       },
       dailyChart,
-      activeRuns: activeRuns.map((run) => {
+      activeRuns: activeRuns.map((run: (typeof activeRuns)[number]) => {
         const completed = run.test_cases.filter(
           (tc) => tc.status !== "PENDING" && tc.status !== "RUNNING"
         ).length;
@@ -236,7 +236,7 @@ export async function GET() {
           started_at: run.started_at.toISOString(),
         };
       }),
-      recentRuns: recentRuns.map((run) => ({
+      recentRuns: recentRuns.map((run: (typeof recentRuns)[number]) => ({
         id: run.id,
         commit_hash: run.commit_hash,
         commit_message: run.commit_message,
@@ -248,7 +248,7 @@ export async function GET() {
         failed: run.failed,
         started_at: run.started_at.toISOString(),
       })),
-      recentFailures: recentFailures.map((f) => ({
+      recentFailures: recentFailures.map((f: (typeof recentFailures)[number]) => ({
         id: f.id,
         title: f.title,
         bug_description: f.bug_description,
@@ -258,11 +258,11 @@ export async function GET() {
         agent_name: f.test_run.agent.name,
         created_at: f.created_at.toISOString(),
       })),
-      topFailingPages: failingPages.map((p) => ({
+      topFailingPages: failingPages.map((p: (typeof failingPages)[number]) => ({
         url_path: p.url_path,
         failure_count: p._count.id,
       })),
-      agents: allAgents.map((a) => ({
+      agents: allAgents.map((a: (typeof allAgents)[number]) => ({
         id: a.id,
         name: a.name,
         status: a.status,

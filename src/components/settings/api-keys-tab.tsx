@@ -120,7 +120,7 @@ export default function ApiKeysTab() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {keys.map((key) => (
+              {keys.map((key: ApiKeyResponse) => (
                 <TableRow key={key.id} className={!key.is_active ? "opacity-60" : ""}>
                   <TableCell>
                     <span className="font-medium text-gray-900">{key.label}</span>

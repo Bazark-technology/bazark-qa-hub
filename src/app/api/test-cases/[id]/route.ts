@@ -131,7 +131,7 @@ export async function PATCH(
       // Create screenshots if provided
       if (screenshots && screenshots.length > 0) {
         await Promise.all(
-          screenshots.map((url, index) =>
+          screenshots.map((url: string, index: number) =>
             tx.screenshot.create({
               data: {
                 test_case_id: id,

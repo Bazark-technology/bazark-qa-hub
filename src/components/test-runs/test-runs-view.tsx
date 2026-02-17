@@ -288,7 +288,7 @@ export default function TestRunsView({ initialRuns }: TestRunsViewProps) {
               {isRefreshing && grouped.running.length === 0 ? (
                 <TestRunCardSkeleton />
               ) : grouped.running.length > 0 ? (
-                grouped.running.map((run) => <TestRunCard key={run.id} testRun={run} />)
+                grouped.running.map((run: TestRunWithCases) => <TestRunCard key={run.id} testRun={run} />)
               ) : (
                 <EmptyColumn status="running" />
               )}
@@ -302,7 +302,7 @@ export default function TestRunsView({ initialRuns }: TestRunsViewProps) {
               {isRefreshing && grouped.queued.length === 0 ? (
                 <TestRunCardSkeleton />
               ) : grouped.queued.length > 0 ? (
-                grouped.queued.map((run) => <TestRunCard key={run.id} testRun={run} />)
+                grouped.queued.map((run: TestRunWithCases) => <TestRunCard key={run.id} testRun={run} />)
               ) : (
                 <EmptyColumn status="queued" />
               )}
@@ -319,7 +319,7 @@ export default function TestRunsView({ initialRuns }: TestRunsViewProps) {
                   <TestRunCardSkeleton />
                 </>
               ) : grouped.passed.length > 0 ? (
-                grouped.passed.map((run) => <TestRunCard key={run.id} testRun={run} />)
+                grouped.passed.map((run: TestRunWithCases) => <TestRunCard key={run.id} testRun={run} />)
               ) : (
                 <EmptyColumn status="passed" />
               )}
@@ -333,7 +333,7 @@ export default function TestRunsView({ initialRuns }: TestRunsViewProps) {
               {isRefreshing && grouped.failed.length === 0 ? (
                 <TestRunCardSkeleton />
               ) : grouped.failed.length > 0 ? (
-                grouped.failed.map((run) => <TestRunCard key={run.id} testRun={run} />)
+                grouped.failed.map((run: TestRunWithCases) => <TestRunCard key={run.id} testRun={run} />)
               ) : (
                 <EmptyColumn status="failed" />
               )}
@@ -534,7 +534,7 @@ function TestRunsListView({ runs }: { runs: TestRunWithCases[] }) {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {sortedRuns.map((run, idx) => {
+        {sortedRuns.map((run: TestRunWithCases, idx: number) => {
           const passRate = run.total_tests > 0 ? Math.round((run.passed / run.total_tests) * 100) : 0;
           return (
             <TableRow
@@ -548,10 +548,10 @@ function TestRunsListView({ runs }: { runs: TestRunWithCases[] }) {
                     run.status === "PASSED"
                       ? "success"
                       : run.status === "FAILED" || run.status === "TIMED_OUT"
-                      ? "destructive"
-                      : run.status === "RUNNING"
-                      ? "default"
-                      : "warning"
+                        ? "destructive"
+                        : run.status === "RUNNING"
+                          ? "default"
+                          : "warning"
                   }
                 >
                   {run.status}

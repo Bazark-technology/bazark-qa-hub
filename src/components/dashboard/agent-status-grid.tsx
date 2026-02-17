@@ -65,7 +65,7 @@ export default function AgentStatusGrid({ agents }: AgentStatusGridProps) {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {agents.map((agent) => (
+        {agents.map((agent: DashboardAgent) => (
           <Link
             key={agent.id}
             href={"/agents"}

@@ -94,7 +94,7 @@ async function getTestRun(id: string): Promise<TestRunFull | null> {
       name: testRun.agent.name,
       status: testRun.agent.status,
     },
-    test_cases: testRun.test_cases.map((tc) => ({
+    test_cases: testRun.test_cases.map((tc: (typeof testRun)["test_cases"][number]) => ({
       id: tc.id,
       order: tc.order,
       title: tc.title,
@@ -113,14 +113,14 @@ async function getTestRun(id: string): Promise<TestRunFull | null> {
       retries: tc.retries,
       started_at: tc.started_at?.toISOString() || null,
       finished_at: tc.finished_at?.toISOString() || null,
-      screenshots: tc.screenshots.map((s) => ({
+      screenshots: tc.screenshots.map((s: (typeof testRun)["test_cases"][number]["screenshots"][number]) => ({
         id: s.id,
         url: s.url,
         label: s.label,
         step_number: s.step_number,
         is_failure: s.is_failure,
       })),
-      recordings: tc.recordings.map((r) => ({
+      recordings: tc.recordings.map((r: (typeof testRun)["test_cases"][number]["recordings"][number]) => ({
         id: r.id,
         url: r.url,
         duration_ms: r.duration_ms,

@@ -34,9 +34,9 @@ export default function TopFailingPages({ pages }: TopFailingPagesProps) {
       </div>
 
       <div className="space-y-4">
-        {pages.map((page, idx) => {
+        {pages.map((page: FailingPage, idx: number) => {
           const barWidth = (page.failure_count / maxCount) * 100;
-          
+
           return (
             <div key={page.url_path} className="relative">
               <div className="flex items-center justify-between mb-1">

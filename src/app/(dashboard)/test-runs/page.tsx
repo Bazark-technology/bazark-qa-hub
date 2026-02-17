@@ -49,7 +49,7 @@ async function getTestRuns(): Promise<TestRunWithCases[]> {
     },
   });
 
-  return testRuns.map((run) => ({
+  return testRuns.map((run: (typeof testRuns)[number]) => ({
     ...run,
     started_at: run.started_at.toISOString(),
     finished_at: run.finished_at?.toISOString() || null,
@@ -58,7 +58,7 @@ async function getTestRuns(): Promise<TestRunWithCases[]> {
       name: run.agent.name,
       status: run.agent.status,
     },
-    test_cases: run.test_cases.map((tc) => ({
+    test_cases: run.test_cases.map((tc: (typeof testRuns)[number]["test_cases"][number]) => ({
       id: tc.id,
       title: tc.title,
       status: tc.status,
