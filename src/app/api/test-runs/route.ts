@@ -279,6 +279,11 @@ export async function GET(request: NextRequest) {
             priority: true,
             duration_ms: true,
             bug_description: true,
+            _count: {
+              select: {
+                recordings: true,
+              },
+            },
           },
           orderBy: { order: "asc" },
         },

@@ -5,6 +5,7 @@ export { default as Skeleton } from "./skeleton";
 export { default as Badge } from "./badge";
 export { default as Modal } from "./modal";
 export { default as Toast } from "./toast";
+export { VideoPlayer } from "./video-player";
 export {
   Table,
   TableHeader,

@@ -11,10 +11,10 @@ import {
   ChevronRight,
   AlertTriangle,
   Image as ImageIcon,
-  Video,
+  PlayCircle,
   Ban,
 } from "lucide-react";
-import { Badge } from "@/components/ui";
+import { Badge, VideoPlayer } from "@/components/ui";
 import type { TestCaseFull, TestStatus } from "@/types";
 
 interface TestCaseCardProps {
@@ -187,60 +187,60 @@ export default function TestCaseCard({ testCase, onScreenshotClick }: TestCaseCa
                 Screenshots ({screenshots.length})
               </h4>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {screenshots.map((screenshot, idx) => (
-                  <button
-                    key={screenshot.id}
-                    onClick={() => onScreenshotClick?.(
-                      screenshots.map((s) => ({ url: s.url, label: s.label })),
-                      idx
-                    )}
-                    className="relative group rounded-lg overflow-hidden border border-gray-200 hover:border-blue-500 transition-colors"
-                  >
-                    <img
-                      src={screenshot.url}
-                      alt={screenshot.label || "Screenshot " + (idx + 1)}
-                      className="w-full h-24 object-cover group-hover:scale-105 transition-transform"
-                      loading="lazy"
-                    />
-                    {screenshot.is_failure && (
-                      <div className="absolute top-1 right-1 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded">
-                        Failure
-                      </div>
-                    )}
-                    {screenshot.label && (
-                      <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs px-2 py-1 truncate">
-                        {screenshot.label}
-                      </div>
-                    )}
-                  </button>
-                ))}
+                {screenshots.map((screenshot, idx) => {
+                  const displayLabel = screenshots.length === 2
+                    ? (idx === 0 ? "Before" : "After")
+                    : screenshot.label;
+
+                  return (
+                    <button
+                      key={screenshot.id}
+                      onClick={() => onScreenshotClick?.(
+                        screenshots.map((s, i) => ({
+                          url: s.url,
+                          label: screenshots.length === 2
+                            ? (i === 0 ? "Before" : "After")
+                            : s.label
+                        })),
+                        idx
+                      )}
+                      className="relative group rounded-lg overflow-hidden border border-gray-200 hover:border-blue-500 transition-colors"
+                    >
+                      <img
+                        src={screenshot.url}
+                        alt={displayLabel || "Screenshot " + (idx + 1)}
+                        className="w-full h-24 object-cover group-hover:scale-105 transition-transform"
+                        loading="lazy"
+                      />
+                      {screenshot.is_failure && (
+                        <div className="absolute top-1 right-1 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded">
+                          Failure
+                        </div>
+                      )}
+                      {displayLabel && (
+                        <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs px-2 py-1 truncate">
+                          {displayLabel}
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}
 
-          {/* Recordings */}
-          {recordings.length > 0 && (
-            <div>
-              <h4 className="text-sm font-medium text-gray-900 mb-2 flex items-center gap-2">
-                <Video className="w-4 h-4" />
-                Recordings ({recordings.length})
+          {/* Test Recording */}
+          {recordings.length > 0 && recordings[0]?.url && (
+            <div className="mt-4 border-t border-gray-100 pt-4">
+              <h4 className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                <PlayCircle className="w-4 h-4" />
+                Test Recording
               </h4>
-              <div className="space-y-2">
-                {recordings.map((recording) => (
-                  <a
-                    key={recording.id}
-                    href={recording.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                  >
-                    <Video className="w-5 h-5 text-blue-500" />
-                    <span className="text-sm text-gray-700">
-                      Recording ({recording.format})
-                      {recording.duration_ms && " - " + (recording.duration_ms / 1000).toFixed(1) + "s"}
-                    </span>
-                  </a>
-                ))}
+              <div className="mt-2 w-full">
+                <VideoPlayer
+                  src={recordings[0].url}
+                  poster={screenshots.length > 0 ? screenshots[0].url : undefined}
+                />
               </div>
             </div>
           )}

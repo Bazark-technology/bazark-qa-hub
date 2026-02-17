@@ -91,6 +91,9 @@ export interface TestCaseSummary {
   priority: Priority;
   duration_ms: number | null;
   bug_description: string | null;
+  _count?: {
+    recordings: number;
+  };
 }
 
 export interface TestCaseFull extends TestCaseSummary {

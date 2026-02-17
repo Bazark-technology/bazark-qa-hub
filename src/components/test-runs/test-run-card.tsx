@@ -17,6 +17,7 @@ import {
   XOctagon,
   GitBranch,
   Check,
+  Video,
 } from "lucide-react";
 import { Badge } from "@/components/ui";
 import type { TestRunWithCases, TestStatus } from "@/types";
@@ -268,6 +269,11 @@ export default function TestRunCard({ testRun, onRerun, onCancel }: TestRunCardP
             <span className="text-xs text-gray-700 truncate flex-1 max-w-[200px]">
               {tc.title}
             </span>
+            {tc._count && tc._count.recordings > 0 && (
+              <span title="Recording available">
+                <Video className="w-3 h-3 text-blue-500 flex-shrink-0" />
+              </span>
+            )}
             <span className={"inline-block w-1.5 h-1.5 rounded-full " + getPriorityDotColor(tc.priority)} />
           </div>
         ))}

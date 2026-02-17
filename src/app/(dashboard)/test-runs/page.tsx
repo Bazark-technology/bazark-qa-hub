@@ -43,6 +43,11 @@ async function getTestRuns(): Promise<TestRunWithCases[]> {
           priority: true,
           duration_ms: true,
           bug_description: true,
+          _count: {
+            select: {
+              recordings: true,
+            },
+          },
         },
         orderBy: { order: "asc" },
       },
@@ -65,6 +70,7 @@ async function getTestRuns(): Promise<TestRunWithCases[]> {
       priority: tc.priority,
       duration_ms: tc.duration_ms,
       bug_description: tc.bug_description,
+      _count: tc._count,
     })),
   }));
 }
