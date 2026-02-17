@@ -132,15 +132,16 @@ async function getDashboardData(): Promise<DashboardData> {
   ]);
 
   // Calculate today's stats
-  const todayPassed = todayRuns.filter((r) => r.status === "PASSED").length;
-  const todayFailed = todayRuns.filter((r) => r.status === "FAILED").length;
-  const todayTotalTests = todayRuns.reduce((sum, r) => sum + r.total_tests, 0);
-  const todayPassedTests = todayRuns.reduce((sum, r) => sum + r.passed, 0);
+  type TodayRun = (typeof todayRuns)[number];
+  const todayPassed = todayRuns.filter((r: TodayRun) => r.status === "PASSED").length;
+  const todayFailed = todayRuns.filter((r: TodayRun) => r.status === "FAILED").length;
+  const todayTotalTests = todayRuns.reduce((sum: number, r: TodayRun) => sum + r.total_tests, 0);
+  const todayPassedTests = todayRuns.reduce((sum: number, r: TodayRun) => sum + r.passed, 0);
   const todayPassRate = todayTotalTests > 0 ? (todayPassedTests / todayTotalTests) * 100 : 0;
 
   // Count today's open bugs
-  const todayFailedRuns = todayRuns.filter((r) => r.status === "FAILED");
-  const todayOpenBugs = todayFailedRuns.reduce((sum, r) => sum + r.failed, 0);
+  const todayFailedRuns = todayRuns.filter((r: TodayRun) => r.status === "FAILED");
+  const todayOpenBugs = todayFailedRuns.reduce((sum: number, r: TodayRun) => sum + r.failed, 0);
 
   // Get high priority bug count
   const todayHighPriorityBugs = recentFailures.filter(
