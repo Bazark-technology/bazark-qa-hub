@@ -1,0 +1,409 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id         String    @id @default(cuid())
+  name       String
+  email      String    @unique
+  password   String
+  role       UserRole  @default(VIEWER)
+  avatar     String?
+  is_active  Boolean   @default(true)
+  last_login DateTime?
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+
+  api_keys       ApiKey[]
+  created_agents Agent[]        @relation("AgentCreatedBy")
+  activities     ActivityLog[]
+  notifications  Notification[]
+
+  @@index([email])
+  @@map("users")
+}
+
+model Session {
+  id            String   @id @default(cuid())
+  session_token String   @unique
+  user_id       String
+  expires       DateTime
+  created_at    DateTime @default(now())
+
+  @@index([user_id])
+  @@map("sessions")
+}
+
+model ApiKey {
+  id            String    @id @default(cuid())
+  key           String    @unique
+  label         String
+  created_by_id String
+  created_by    User      @relation(fields: [created_by_id], references: [id], onDelete: Cascade)
+  is_active     Boolean   @default(true)
+  last_used     DateTime?
+  expires_at    DateTime?
+  created_at    DateTime  @default(now())
+
+  @@index([key])
+  @@index([created_by_id])
+  @@map("api_keys")
+}
+
+model Agent {
+  id             String      @id @default(cuid())
+  name           String
+  api_key        String      @unique
+  status         AgentStatus @default(OFFLINE)
+  dev_url        String
+  repo_url       String
+  branch         String      @default("main")
+  cron_schedule  String?
+  hostname       String?
+  ip_address     String?
+  os_info        String?
+  version        String?
+  last_heartbeat DateTime?
+  config         Json?
+  created_by_id  String?
+  created_by     User?       @relation("AgentCreatedBy", fields: [created_by_id], references: [id], onDelete: SetNull)
+  created_at     DateTime    @default(now())
+  updated_at     DateTime    @updatedAt
+
+  test_runs  TestRun[]
+  agent_logs AgentLog[]
+
+  @@index([api_key])
+  @@index([status])
+  @@map("agents")
+}
+
+model AgentLog {
+  id         String   @id @default(cuid())
+  agent_id   String
+  agent      Agent    @relation(fields: [agent_id], references: [id], onDelete: Cascade)
+  level      LogLevel @default(INFO)
+  message    String
+  metadata   Json?
+  created_at DateTime @default(now())
+
+  @@index([agent_id, created_at])
+  @@map("agent_logs")
+}
+
+model Project {
+  id             String   @id @default(cuid())
+  name           String
+  slug           String   @unique
+  repo_url       String
+  dev_url        String
+  staging_url    String?
+  production_url String?
+  branch         String   @default("main")
+  description    String?
+  is_active      Boolean  @default(true)
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  test_runs TestRun[]
+  webhooks  Webhook[]
+
+  @@index([slug])
+  @@map("projects")
+}
+
+model Commit {
+  id            String   @id @default(cuid())
+  hash          String
+  short_hash    String
+  message       String
+  author_name   String
+  author_email  String
+  branch        String
+  diff_summary  String?
+  files_changed Json?
+  committed_at  DateTime
+  created_at    DateTime @default(now())
+
+  test_runs TestRun[]
+
+  @@unique([hash])
+  @@index([hash])
+  @@index([branch])
+  @@index([committed_at])
+  @@map("commits")
+}
+
+model TestRun {
+  id             String     @id @default(cuid())
+  run_number     Int        @default(autoincrement())
+  agent_id       String
+  agent          Agent      @relation(fields: [agent_id], references: [id], onDelete: Cascade)
+  project_id     String?
+  project        Project?   @relation(fields: [project_id], references: [id], onDelete: SetNull)
+  commit_id      String?
+  commit         Commit?    @relation(fields: [commit_id], references: [id], onDelete: SetNull)
+  commit_hash    String
+  commit_message String
+  commit_author  String
+  branch         String
+  status         RunStatus  @default(RUNNING)
+  trigger        RunTrigger @default(MANUAL)
+  environment    String     @default("development")
+  dev_url        String
+  total_tests    Int        @default(0)
+  passed         Int        @default(0)
+  failed         Int        @default(0)
+  skipped        Int        @default(0)
+  duration_ms    Int?
+  summary        String?
+  ai_analysis    String?
+  started_at     DateTime   @default(now())
+  finished_at    DateTime?
+  created_at     DateTime   @default(now())
+
+  test_cases TestCase[]
+
+  @@index([agent_id])
+  @@index([project_id])
+  @@index([commit_hash])
+  @@index([status])
+  @@index([started_at])
+  @@map("test_runs")
+}
+
+model TestCase {
+  id              String       @id @default(cuid())
+  test_run_id     String
+  test_run        TestRun      @relation(fields: [test_run_id], references: [id], onDelete: Cascade)
+  order           Int          @default(0)
+  title           String
+  description     String?
+  url_path        String
+  full_url        String?
+  steps           Json
+  expected        String
+  actual          String?
+  status          TestStatus   @default(PENDING)
+  priority        Priority     @default(MEDIUM)
+  category        String?
+  bug_description String?
+  bug_severity    BugSeverity?
+  duration_ms     Int?
+  retries         Int          @default(0)
+  ai_notes        String?
+  started_at      DateTime?
+  finished_at     DateTime?
+  created_at      DateTime     @default(now())
+
+  screenshots Screenshot[]
+  recordings  Recording[]
+  test_steps  TestStep[]
+
+  @@index([test_run_id])
+  @@index([status])
+  @@index([priority])
+  @@map("test_cases")
+}
+
+model TestStep {
+  id             String     @id @default(cuid())
+  test_case_id   String
+  test_case      TestCase   @relation(fields: [test_case_id], references: [id], onDelete: Cascade)
+  order          Int        @default(0)
+  action         String
+  selector       String?
+  value          String?
+  description    String
+  status         StepStatus @default(PENDING)
+  error_message  String?
+  duration_ms    Int?
+  screenshot_url String?
+  created_at     DateTime   @default(now())
+
+  @@index([test_case_id])
+  @@map("test_steps")
+}
+
+model Screenshot {
+  id           String   @id @default(cuid())
+  test_case_id String
+  test_case    TestCase @relation(fields: [test_case_id], references: [id], onDelete: Cascade)
+  url          String
+  file_path    String
+  file_size    Int?
+  width        Int?
+  height       Int?
+  label        String?
+  step_number  Int?
+  is_failure   Boolean  @default(false)
+  created_at   DateTime @default(now())
+
+  @@index([test_case_id])
+  @@map("screenshots")
+}
+
+model Recording {
+  id           String   @id @default(cuid())
+  test_case_id String
+  test_case    TestCase @relation(fields: [test_case_id], references: [id], onDelete: Cascade)
+  url          String
+  file_path    String
+  file_size    Int?
+  duration_ms  Int?
+  format       String   @default("webm")
+  created_at   DateTime @default(now())
+
+  @@index([test_case_id])
+  @@map("recordings")
+}
+
+model Webhook {
+  id             String          @id @default(cuid())
+  project_id     String
+  project        Project         @relation(fields: [project_id], references: [id], onDelete: Cascade)
+  provider       WebhookProvider @default(GITHUB)
+  secret         String
+  url            String
+  is_active      Boolean         @default(true)
+  last_triggered DateTime?
+  created_at     DateTime        @default(now())
+
+  @@index([project_id])
+  @@map("webhooks")
+}
+
+model ActivityLog {
+  id          String   @id @default(cuid())
+  user_id     String?
+  user        User?    @relation(fields: [user_id], references: [id], onDelete: SetNull)
+  action      String
+  entity_type String
+  entity_id   String?
+  description String
+  metadata    Json?
+  ip_address  String?
+  created_at  DateTime @default(now())
+
+  @@index([user_id])
+  @@index([entity_type, entity_id])
+  @@index([created_at])
+  @@map("activity_logs")
+}
+
+model Notification {
+  id         String           @id @default(cuid())
+  user_id    String
+  user       User             @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  type       NotificationType
+  title      String
+  message    String
+  link       String?
+  is_read    Boolean          @default(false)
+  created_at DateTime         @default(now())
+
+  @@index([user_id, is_read])
+  @@index([created_at])
+  @@map("notifications")
+}
+
+model Setting {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       Json
+  description String?
+  updated_at  DateTime @updatedAt
+
+  @@map("settings")
+}
+
+enum UserRole {
+  ADMIN
+  MANAGER
+  TESTER
+  VIEWER
+}
+
+enum AgentStatus {
+  ONLINE
+  OFFLINE
+  RUNNING
+  ERROR
+  PAUSED
+}
+
+enum LogLevel {
+  DEBUG
+  INFO
+  WARN
+  ERROR
+}
+
+enum RunStatus {
+  QUEUED
+  RUNNING
+  PASSED
+  FAILED
+  CANCELLED
+  TIMED_OUT
+}
+
+enum RunTrigger {
+  MANUAL
+  WEBHOOK
+  CRON
+  API
+}
+
+enum TestStatus {
+  PENDING
+  RUNNING
+  PASS
+  FAIL
+  SKIPPED
+  BLOCKED
+}
+
+enum StepStatus {
+  PENDING
+  RUNNING
+  PASS
+  FAIL
+  SKIPPED
+}
+
+enum Priority {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum BugSeverity {
+  BLOCKER
+  CRITICAL
+  MAJOR
+  MINOR
+  TRIVIAL
+}
+
+enum WebhookProvider {
+  GITHUB
+  GITLAB
+  BITBUCKET
+  AZURE_DEVOPS
+}
+
+enum NotificationType {
+  TEST_PASSED
+  TEST_FAILED
+  AGENT_OFFLINE
+  AGENT_ERROR
+  RUN_COMPLETE
+  NEW_BUG
+  SYSTEM
+}
