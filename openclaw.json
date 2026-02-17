@@ -1,0 +1,107 @@
+{
+    "meta": {
+        "lastTouchedVersion": "2026.2.15",
+        "lastTouchedAt": "2026-02-17T10:43:03.806Z"
+    },
+    "wizard": {
+        "lastRunAt": "2026-02-17T10:37:52.912Z",
+        "lastRunVersion": "2026.2.15",
+        "lastRunCommand": "onboard",
+        "lastRunMode": "local"
+    },
+    "auth": {
+        "profiles": {
+            "anthropic:default": {
+                "provider": "anthropic",
+                "mode": "token"
+            }
+        }
+    },
+    "agents": {
+        "defaults": {
+            "model": {
+                "primary": "anthropic/claude-opus-4-5"
+            },
+            "models": {
+                "anthropic/claude-opus-4-5": {}
+            },
+            "workspace": "/home/bazarkadmin/.openclaw/workspace",
+            "compaction": {
+                "mode": "safeguard"
+            },
+            "maxConcurrent": 4,
+            "subagents": {
+                "maxConcurrent": 8
+            }
+        }
+    },
+    "messages": {
+        "ackReactionScope": "group-mentions"
+    },
+    "commands": {
+        "native": "auto",
+        "nativeSkills": "auto"
+    },
+    "channels": {
+        "telegram": {
+            "enabled": true,
+            "dmPolicy": "pairing",
+            "botToken": "8408771496:AAFgSOlEWJO0mJ77fJ9kEZR_zR7U1aScgxo",
+            "groups": {
+                "*": {
+                    "requireMention": true
+                }
+            },
+            "groupPolicy": "allowlist",
+            "streamMode": "partial"
+        }
+    },
+    "gateway": {
+        "port": 18789,
+        "mode": "local",
+        "bind": "loopback",
+        "auth": {
+            "mode": "token",
+            "token": "2c0543ed7d7dfbbddebc98a9416988f187c7193913144171"
+        },
+        "tailscale": {
+            "mode": "off",
+            "resetOnExit": false
+        },
+        "nodes": {
+            "denyCommands": [
+                "camera.snap",
+                "camera.clip",
+                "screen.record",
+                "calendar.add",
+                "contacts.add",
+                "reminders.add"
+            ]
+        }
+    },
+    "skills": {
+        "install": {
+            "nodeManager": "bun"
+        }
+    },
+    "plugins": {
+        "entries": {
+            "telegram": {
+                "enabled": true
+            }
+        }
+    },
+    "browser": {
+        "defaultProfile": "openclaw",
+        "headless": true,
+        "noSandbox": true
+    },
+    "tools": {
+        "browser": true,
+        "exec": true,
+        "read": true,
+        "write": true,
+        "web_search": true,
+        "web_fetch": true
+    }
+}
