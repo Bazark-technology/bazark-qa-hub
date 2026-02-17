@@ -34,6 +34,7 @@ async function getAgents(): Promise<AgentWithStats[]> {
   });
 
   type AgentWithRuns = (typeof agents)[number];
+  type AgentTestRun = AgentWithRuns["test_runs"][number];
 
   const agentsWithStats = await Promise.all(
     agents.map(async (agent: AgentWithRuns) => {
@@ -95,7 +96,7 @@ async function getAgents(): Promise<AgentWithStats[]> {
           avg_duration_ms: Math.round(statsAgg._avg.duration_ms || 0),
           is_stale: isStale,
         },
-        recent_runs: agent.test_runs.map((run) => ({
+        recent_runs: agent.test_runs.map((run: AgentTestRun) => ({
           id: run.id,
           commit_hash: run.commit_hash,
           commit_message: run.commit_message,
