@@ -33,8 +33,10 @@ async function getAgents(): Promise<AgentWithStats[]> {
     },
   });
 
+  type AgentWithRuns = (typeof agents)[number];
+
   const agentsWithStats = await Promise.all(
-    agents.map(async (agent) => {
+    agents.map(async (agent: AgentWithRuns) => {
       // Get aggregated stats
       const statsAgg = await prisma.testRun.aggregate({
         where: { agent_id: agent.id },
