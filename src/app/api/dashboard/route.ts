@@ -220,10 +220,15 @@ export async function GET() {
       dailyChart,
       activeRuns: activeRuns.map((run: (typeof activeRuns)[number]) => {
         const completed = run.test_cases.filter(
-          (tc) => tc.status !== "PENDING" && tc.status !== "RUNNING"
+          (tc: (typeof activeRuns)[number]["test_cases"][number]) =>
+            tc.status !== "PENDING" && tc.status !== "RUNNING"
         ).length;
-        const passed = run.test_cases.filter((tc) => tc.status === "PASS").length;
-        const failed = run.test_cases.filter((tc) => tc.status === "FAIL").length;
+        const passed = run.test_cases.filter(
+          (tc: (typeof activeRuns)[number]["test_cases"][number]) => tc.status === "PASS"
+        ).length;
+        const failed = run.test_cases.filter(
+          (tc: (typeof activeRuns)[number]["test_cases"][number]) => tc.status === "FAIL"
+        ).length;
         return {
           id: run.id,
           commit_hash: run.commit_hash,
