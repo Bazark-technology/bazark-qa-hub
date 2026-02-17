@@ -17,6 +17,20 @@ import { Badge, Button } from "@/components/ui";
 
 const STALE_THRESHOLD_MS = 3 * 60 * 1000;
 
+interface AgentTestRun {
+  id: string;
+  run_number: number;
+  commit_hash: string;
+  commit_message: string;
+  status: string;
+  total_tests: number;
+  passed: number;
+  failed: number;
+  started_at: Date;
+  finished_at: Date | null;
+  duration_ms: number | null;
+}
+
 function getStatusBadge(status: string) {
   const variants: Record<string, "success" | "default" | "destructive" | "warning"> = {
     ONLINE: "success",
@@ -269,7 +283,7 @@ export default async function AgentDetailPage({
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
-                {agent.test_runs.map((run) => (
+                {agent.test_runs.map((run: AgentTestRun) => (
                   <tr key={run.id} className="hover:bg-gray-50">
                     <td className="py-3 text-sm font-medium text-gray-900">#{run.run_number}</td>
                     <td className="py-3">
