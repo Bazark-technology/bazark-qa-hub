@@ -110,15 +110,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ status: "ignored", reason: "no repository name" });
     }
 
-    // Check if any ref update is to main branch
-    const mainBranchUpdate = refUpdates.find((ref) => getBranchName(ref.name) === "main");
+    // Check if any ref update is to main or develop branch
+    const allowedBranches = ["main", "develop"];
+    const targetBranchUpdate = refUpdates.find((ref) =>
+      allowedBranches.includes(getBranchName(ref.name))
+    );
 
-    if (!mainBranchUpdate) {
-      console.log("[Webhook] Ignoring push to non-main branch");
-      return NextResponse.json({ status: "ignored", reason: "not main branch" });
+    if (!targetBranchUpdate) {
+      console.log("[Webhook] Ignoring push to non-main/develop branch");
+      return NextResponse.json({ status: "ignored", reason: "not main or develop branch" });
     }
 
-    const branch = getBranchName(mainBranchUpdate.name);
+    const branch = getBranchName(targetBranchUpdate.name);
     const repoType = getRepoType(repoName);
 
     if (!repoType) {
@@ -164,6 +167,6 @@ export async function GET() {
   return NextResponse.json({
     status: "ok",
     endpoint: "Azure DevOps webhook",
-    accepts: "git.push events to main branch",
+    accepts: "git.push events to main or develop branch",
   });
 }
