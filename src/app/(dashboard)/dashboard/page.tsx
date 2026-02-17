@@ -144,8 +144,9 @@ async function getDashboardData(): Promise<DashboardData> {
   const todayOpenBugs = todayFailedRuns.reduce((sum: number, r: TodayRun) => sum + r.failed, 0);
 
   // Get high priority bug count
+  type RecentFailure = (typeof recentFailures)[number];
   const todayHighPriorityBugs = recentFailures.filter(
-    (f) => f.priority === "HIGH" || f.priority === "CRITICAL"
+    (f: RecentFailure) => f.priority === "HIGH" || f.priority === "CRITICAL"
   ).length;
 
   // Group chart data by day
@@ -158,7 +159,8 @@ async function getDashboardData(): Promise<DashboardData> {
   }
 
   // Fill in actual data
-  chartRuns.forEach((run) => {
+  type ChartRun = (typeof chartRuns)[number];
+  chartRuns.forEach((run: ChartRun) => {
     const date = format(new Date(run.started_at), "yyyy-MM-dd");
     const existing = dailyMap.get(date);
     if (existing) {
