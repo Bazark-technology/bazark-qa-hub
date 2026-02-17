@@ -34,10 +34,29 @@ export default function ApiKeysTab() {
   const [toast, setToast] = useState<ToastState | null>(null);
 
   const handleCopyKey = async (key: ApiKeyResponse) => {
-    await navigator.clipboard.writeText(key.masked_key);
-    setCopiedKeyId(key.id);
-    setToast({ message: "Copied to clipboard", type: "success" });
-    setTimeout(() => setCopiedKeyId(null), 2000);
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(key.masked_key);
+      } else {
+        // Fallback for non-secure contexts
+        const textArea = document.createElement("textarea");
+        textArea.value = key.masked_key;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-999999px";
+        textArea.style.top = "-999999px";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textArea);
+      }
+      setCopiedKeyId(key.id);
+      setToast({ message: "Copied to clipboard", type: "success" });
+      setTimeout(() => setCopiedKeyId(null), 2000);
+    } catch (err) {
+      console.error("Failed to copy:", err);
+      setToast({ message: "Failed to copy to clipboard", type: "error" });
+    }
   };
 
   const handleRevokeClick = (key: ApiKeyResponse) => {
