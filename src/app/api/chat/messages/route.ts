@@ -244,7 +244,7 @@ export async function POST(request: NextRequest) {
         pr_url: data.pr_url,
         test_run_id: data.test_run_id,
         commit_hash: data.commit_hash,
-        metadata: data.metadata,
+        metadata: data.metadata as object | undefined,
       },
     });
 
