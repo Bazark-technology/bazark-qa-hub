@@ -61,12 +61,6 @@ export async function GET(request: NextRequest) {
         agent_logs: {
           orderBy: { created_at: "desc" },
           take: 1,
-          where: {
-            metadata: {
-              path: ["current_task"],
-              not: null,
-            },
-          },
           select: {
             metadata: true,
           },
