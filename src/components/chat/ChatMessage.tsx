@@ -303,14 +303,14 @@ export function ChatMessage({ message, onScreenshotClick }: ChatMessageProps) {
               <AlertTriangle className="w-4 h-4" />
               <span className="font-medium text-sm">Bug Report</span>
             </div>
-            {metadata.bug_description && (
+            {typeof metadata.bug_description === "string" && (
               <p className="text-sm text-gray-700">
-                {metadata.bug_description as string}
+                {metadata.bug_description}
               </p>
             )}
-            {metadata.affected_page && (
+            {typeof metadata.affected_page === "string" && (
               <p className="text-xs text-gray-500 mt-1">
-                Page: {metadata.affected_page as string}
+                Page: {metadata.affected_page}
               </p>
             )}
           </div>
