@@ -30,7 +30,7 @@ const sendMessageSchema = z.object({
   pr_url: z.string().optional(),
   test_run_id: z.string().optional(),
   commit_hash: z.string().optional(),
-  metadata: z.record(z.unknown()).optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
 });
 
 export async function GET(request: NextRequest) {
