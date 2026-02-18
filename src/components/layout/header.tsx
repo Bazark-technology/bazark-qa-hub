@@ -1,13 +1,17 @@
 "use client";
 
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { Bell } from "lucide-react";
+import { MessageSquare } from "lucide-react";
+import { NotificationBell } from "@/components/chat";
+import { useChatUnread } from "@/hooks/use-chat";
 
 const pageTitles: Record<string, string> = {
   "/dashboard": "Dashboard",
   "/agents": "Agents",
   "/test-runs": "Test Runs",
+  "/chat": "Agent Chat",
   "/reports": "Reports",
   "/settings": "Settings",
 };
@@ -37,6 +41,24 @@ function getInitials(name: string): string {
     .slice(0, 2);
 }
 
+function ChatButton() {
+  const { totalUnread } = useChatUnread();
+
+  return (
+    <Link
+      href="/chat"
+      className="relative p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+    >
+      <MessageSquare className="w-5 h-5" />
+      {totalUnread > 0 && (
+        <span className="absolute top-0.5 right-0.5 w-4 h-4 flex items-center justify-center bg-red-500 text-white text-[10px] font-medium rounded-full">
+          {totalUnread > 9 ? "9+" : totalUnread}
+        </span>
+      )}
+    </Link>
+  );
+}
+
 export default function Header() {
   const pathname = usePathname();
   const { data: session } = useSession();
@@ -47,16 +69,16 @@ export default function Header() {
       {/* Left: Page Title */}
       <h1 className="text-xl font-semibold text-gray-900">{pageTitle}</h1>
 
-      {/* Right: Notifications, User */}
-      <div className="flex items-center gap-4">
+      {/* Right: Chat, Notifications, User */}
+      <div className="flex items-center gap-2">
+        {/* Chat */}
+        <ChatButton />
+
         {/* Notifications */}
-        <button className="relative p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
-          <Bell className="w-5 h-5" />
-          <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
-        </button>
+        <NotificationBell />
 
         {/* User Avatar */}
-        <div className="w-8 h-8 rounded-full bg-[#2563eb] flex items-center justify-center text-white text-sm font-medium">
+        <div className="w-8 h-8 rounded-full bg-[#2563eb] flex items-center justify-center text-white text-sm font-medium ml-2">
           {session?.user?.name ? getInitials(session.user.name) : "U"}
         </div>
       </div>

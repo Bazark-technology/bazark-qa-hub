@@ -270,3 +270,101 @@ export interface ActiveRunsResponse {
   success: boolean;
   active_runs: ActiveRun[];
 }
+
+// ========== Agent Chat Types ==========
+
+export type ChannelType = "GENERAL" | "QA_REPORTS" | "DEV_TASKS" | "DIRECT";
+export type SenderType = "USER" | "QA_AGENT" | "DEV_AGENT" | "MOBILE_QA_AGENT" | "SYSTEM";
+export type MessageType =
+  | "TEXT"
+  | "BUG_REPORT"
+  | "PR_CREATED"
+  | "TEST_RESULT"
+  | "TASK_ASSIGNED"
+  | "TASK_COMPLETED"
+  | "STATUS_UPDATE"
+  | "CODE_SNIPPET";
+
+export interface ChatMessagePreview {
+  content: string;
+  sender_name: string;
+  created_at: string;
+}
+
+export interface ChatChannel {
+  id: string;
+  name: string;
+  slug: string;
+  type: ChannelType;
+  description: string | null;
+  unread_count: number;
+  last_message: ChatMessagePreview | null;
+}
+
+export interface ChatMessage {
+  id: string;
+  channel_id: string;
+  sender_type: SenderType;
+  sender_id: string | null;
+  sender_name: string;
+  content: string;
+  message_type: MessageType;
+  mentions: string[];
+  screenshots: string[];
+  video_url: string | null;
+  pr_url: string | null;
+  test_run_id: string | null;
+  commit_hash: string | null;
+  metadata: Record<string, unknown> | null;
+  is_read: boolean;
+  created_at: string;
+}
+
+export interface ChatAgent {
+  id: string;
+  name: string;
+  handle: string;
+  agent_type: SenderType;
+  status: "ONLINE" | "OFFLINE" | "RUNNING" | "ERROR" | "PAUSED";
+  current_task: string | null;
+  last_seen: string | null;
+}
+
+export interface ChatChannelsResponse {
+  success: boolean;
+  channels: ChatChannel[];
+}
+
+export interface ChatMessagesResponse {
+  success: boolean;
+  messages: ChatMessage[];
+  has_more: boolean;
+  cursor?: string;
+}
+
+export interface ChatAgentsResponse {
+  success: boolean;
+  agents: ChatAgent[];
+}
+
+export interface SendMessageRequest {
+  channel_id?: string;
+  content: string;
+  sender_type?: SenderType;
+  sender_id?: string;
+  sender_name?: string;
+  message_type?: MessageType;
+  mentions?: string[];
+  screenshots?: string[];
+  video_url?: string;
+  pr_url?: string;
+  test_run_id?: string;
+  commit_hash?: string;
+  metadata?: Record<string, unknown>;
+}
+
+export interface SendMessageResponse {
+  success: boolean;
+  message: ChatMessage;
+  mentioned_agents_notified: string[];
+}

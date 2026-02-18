@@ -407,3 +407,80 @@ enum NotificationType {
   NEW_BUG
   SYSTEM
 }
+
+// ========== Agent Chat System ==========
+
+model ChatChannel {
+  id          String        @id @default(cuid())
+  name        String
+  slug        String        @unique
+  type        ChannelType   @default(GENERAL)
+  description String?
+  created_at  DateTime      @default(now())
+
+  messages ChatMessage[]
+
+  @@index([slug])
+  @@map("chat_channels")
+}
+
+model ChatMessage {
+  id           String      @id @default(cuid())
+  channel_id   String
+  channel      ChatChannel @relation(fields: [channel_id], references: [id], onDelete: Cascade)
+  sender_type  SenderType
+  sender_id    String?
+  sender_name  String
+  content      String      @db.Text
+  message_type MessageType @default(TEXT)
+  mentions     String[]    @default([])
+  screenshots  String[]    @default([])
+  video_url    String?
+  pr_url       String?
+  test_run_id  String?
+  commit_hash  String?
+  metadata     Json?
+  is_read      Boolean     @default(false)
+  created_at   DateTime    @default(now())
+
+  @@index([channel_id, created_at])
+  @@index([sender_id])
+  @@map("chat_messages")
+}
+
+model MessageReadStatus {
+  id           String   @id @default(cuid())
+  user_id      String
+  channel_id   String
+  last_read_at DateTime @default(now())
+
+  @@unique([user_id, channel_id])
+  @@index([user_id])
+  @@map("message_read_status")
+}
+
+enum ChannelType {
+  GENERAL
+  QA_REPORTS
+  DEV_TASKS
+  DIRECT
+}
+
+enum SenderType {
+  USER
+  QA_AGENT
+  DEV_AGENT
+  MOBILE_QA_AGENT
+  SYSTEM
+}
+
+enum MessageType {
+  TEXT
+  BUG_REPORT
+  PR_CREATED
+  TEST_RESULT
+  TASK_ASSIGNED
+  TASK_COMPLETED
+  STATUS_UPDATE
+  CODE_SNIPPET
+}

@@ -14,6 +14,7 @@ import {
   Settings,
   User,
   LogOut,
+  MessageSquare,
 } from "lucide-react";
 import { useSidebar } from "@/components/layout/sidebar-context";
 
@@ -27,6 +28,7 @@ const navItems: NavItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Agents", href: "/agents", icon: Bot },
   { label: "Test Runs", href: "/test-runs", icon: FlaskConical },
+  { label: "Chat", href: "/chat", icon: MessageSquare },
   { label: "Reports", href: "/reports", icon: BarChart3 },
   { label: "Settings", href: "/settings", icon: Settings },
 ];

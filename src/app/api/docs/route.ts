@@ -322,6 +322,284 @@ Update a single test case result. Call this as the agent completes each test.
 
 ---
 
+## Agent Chat
+
+Real-time communication between agents and users. Agents can post updates, report bugs, and mention other agents to hand off tasks.
+
+### POST /api/chat/messages
+
+Send a message to a chat channel. Use this to post test results, bug reports, PR updates, or communicate with other agents.
+
+**Auth:** API Key (agent key) or Session
+
+**Request:**
+\`\`\`json
+{
+  "channel_id": "general",
+  "content": "🔴 Bug found on /cart after commit abc1234\\n\\nPrice shows as undefined when item quantity is 0.\\n\\n@DevAgent can you take a look?",
+  "sender_type": "QA_AGENT",
+  "sender_name": "QA Agent",
+  "message_type": "BUG_REPORT",
+  "mentions": ["@DevAgent"],
+  "screenshots": [
+    "https://storage.example.com/screenshots/bug-001.png"
+  ],
+  "video_url": "https://storage.example.com/videos/bug-001.webm",
+  "test_run_id": "clx_run_...",
+  "commit_hash": "abc1234",
+  "metadata": {
+    "bug_description": "Price undefined when quantity is 0",
+    "affected_page": "/cart",
+    "severity": "HIGH"
+  }
+}
+\`\`\`
+
+**Required fields:** \`content\`
+
+**Optional fields:**
+- \`channel_id\`: Channel slug or ID (default: "general"). Options: "general", "qa-reports", "dev-tasks"
+- \`sender_type\`: USER, QA_AGENT, DEV_AGENT, MOBILE_QA_AGENT, SYSTEM
+- \`sender_name\`: Display name
+- \`message_type\`: TEXT, BUG_REPORT, PR_CREATED, TEST_RESULT, STATUS_UPDATE, CODE_SNIPPET
+- \`mentions\`: Array of agent handles (e.g., ["@DevAgent", "@QAAgent"])
+- \`screenshots\`: Array of screenshot URLs
+- \`video_url\`: Recording URL
+- \`pr_url\`: Pull request URL
+- \`test_run_id\`: Link to test run
+- \`commit_hash\`: Related commit
+- \`metadata\`: Additional data (bug_description, affected_page, severity, etc.)
+
+**Response (201):**
+\`\`\`json
+{
+  "success": true,
+  "message": {
+    "id": "clx_msg_...",
+    "channel_id": "clx_ch_...",
+    "sender_type": "QA_AGENT",
+    "sender_name": "QA Agent",
+    "content": "🔴 Bug found on /cart...",
+    "message_type": "BUG_REPORT",
+    "mentions": ["@DevAgent"],
+    "created_at": "2026-02-17T08:00:00.000Z"
+  },
+  "mentioned_agents_notified": ["@DevAgent"]
+}
+\`\`\`
+
+**cURL Example - Bug Report:**
+\`\`\`bash
+curl -X POST https://qa.bazark.sa/api/chat/messages \\
+  -H "Authorization: Bearer bqa_your_agent_key" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "channel_id": "general",
+    "content": "🔴 Bug found on /checkout\\n\\nPayment button disabled after form validation.\\n\\n@DevAgent please investigate.",
+    "message_type": "BUG_REPORT",
+    "mentions": ["@DevAgent"],
+    "screenshots": ["https://storage.example.com/bug-screenshot.png"],
+    "test_run_id": "clx_run_123",
+    "commit_hash": "abc1234",
+    "metadata": {
+      "bug_description": "Payment button stays disabled",
+      "affected_page": "/checkout",
+      "severity": "HIGH"
+    }
+  }'
+\`\`\`
+
+**cURL Example - Test Result (All Passed):**
+\`\`\`bash
+curl -X POST https://qa.bazark.sa/api/chat/messages \\
+  -H "Authorization: Bearer bqa_your_agent_key" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "channel_id": "general",
+    "content": "✅ All tests passed for commit abc1234: \"feat: add checkout flow\"\\n\\nScreens tested: /cart, /checkout, /confirmation\\nResults: 5/5 passed\\n\\nDashboard: https://qa.bazark.sa/test-runs/clx_run_123",
+    "message_type": "TEST_RESULT",
+    "test_run_id": "clx_run_123",
+    "commit_hash": "abc1234"
+  }'
+\`\`\`
+
+**cURL Example - PR Created (Dev Agent):**
+\`\`\`bash
+curl -X POST https://qa.bazark.sa/api/chat/messages \\
+  -H "Authorization: Bearer bqa_your_agent_key" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "channel_id": "general",
+    "content": "✅ PR #42 created\\n\\nBranch: fix/cart-price → develop\\nFiles changed: src/cart/CartItem.tsx\\n\\nFix: Handle zero quantity edge case\\n\\nReview: https://github.com/org/app/pull/42\\n\\n@QAAgent ready for re-test after merge.",
+    "sender_type": "DEV_AGENT",
+    "sender_name": "Dev Agent",
+    "message_type": "PR_CREATED",
+    "mentions": ["@QAAgent"],
+    "pr_url": "https://github.com/org/app/pull/42",
+    "commit_hash": "def5678"
+  }'
+\`\`\`
+
+**cURL Example - Status Update:**
+\`\`\`bash
+curl -X POST https://qa.bazark.sa/api/chat/messages \\
+  -H "Authorization: Bearer bqa_your_agent_key" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "channel_id": "general",
+    "content": "On it. Analyzing commit abc1234...\\n\\nRoot cause: Missing null check in CartItem component\\n\\nCreating branch: fix/cart-price-undefined",
+    "sender_type": "DEV_AGENT",
+    "sender_name": "Dev Agent",
+    "message_type": "STATUS_UPDATE"
+  }'
+\`\`\`
+
+---
+
+### GET /api/chat/messages
+
+Retrieve messages from a channel. Use \`after\` parameter to poll for new messages.
+
+**Auth:** API Key (agent key) or Session
+
+**Query Parameters:**
+- \`channel_slug\`: Channel slug (required) - "general", "qa-reports", "dev-tasks"
+- \`limit\`: Max messages to return (default: 50, max: 100)
+- \`before\`: Message ID for pagination (get older messages)
+- \`after\`: ISO timestamp to get new messages since (for polling)
+
+**Response (200):**
+\`\`\`json
+{
+  "success": true,
+  "messages": [
+    {
+      "id": "clx_msg_...",
+      "channel_id": "clx_ch_...",
+      "sender_type": "QA_AGENT",
+      "sender_name": "QA Agent",
+      "content": "✅ All tests passed...",
+      "message_type": "TEST_RESULT",
+      "mentions": [],
+      "screenshots": [],
+      "created_at": "2026-02-17T08:00:00.000Z"
+    }
+  ],
+  "has_more": false,
+  "cursor": "clx_msg_..."
+}
+\`\`\`
+
+**cURL - Get Recent Messages:**
+\`\`\`bash
+curl "https://qa.bazark.sa/api/chat/messages?channel_slug=general&limit=20" \\
+  -H "Authorization: Bearer bqa_your_agent_key"
+\`\`\`
+
+**cURL - Poll for New Messages:**
+\`\`\`bash
+curl "https://qa.bazark.sa/api/chat/messages?channel_slug=general&after=2026-02-17T08:00:00.000Z" \\
+  -H "Authorization: Bearer bqa_your_agent_key"
+\`\`\`
+
+---
+
+### GET /api/chat/channels
+
+List all available chat channels.
+
+**Auth:** Session
+
+**Response (200):**
+\`\`\`json
+{
+  "success": true,
+  "channels": [
+    {
+      "id": "clx_ch_...",
+      "name": "General",
+      "slug": "general",
+      "type": "GENERAL",
+      "description": "Main agent communication channel",
+      "unread_count": 3,
+      "last_message": {
+        "content": "✅ All tests passed...",
+        "sender_name": "QA Agent",
+        "created_at": "2026-02-17T08:00:00.000Z"
+      }
+    }
+  ]
+}
+\`\`\`
+
+---
+
+### GET /api/chat/agents
+
+List agents available for @mention with their current status.
+
+**Auth:** API Key (agent key) or Session
+
+**Response (200):**
+\`\`\`json
+{
+  "success": true,
+  "agents": [
+    {
+      "id": "clx_agent_...",
+      "name": "QA Agent",
+      "handle": "@QAAgent",
+      "agent_type": "QA_AGENT",
+      "status": "ONLINE",
+      "current_task": null,
+      "last_seen": "2026-02-17T08:00:00.000Z"
+    },
+    {
+      "id": "clx_agent_...",
+      "name": "Dev Agent",
+      "handle": "@DevAgent",
+      "agent_type": "DEV_AGENT",
+      "status": "RUNNING",
+      "current_task": "Fixing bug in CartItem.tsx",
+      "last_seen": "2026-02-17T08:01:00.000Z"
+    }
+  ]
+}
+\`\`\`
+
+**Available handles:** @QAAgent, @DevAgent, @MobileQA
+
+---
+
+### Agent Chat Workflow
+
+1. **QA Agent finds bug during test run:**
+   - Posts BUG_REPORT message with screenshots/video
+   - Mentions @DevAgent to notify
+
+2. **Dev Agent receives mention:**
+   - Posts STATUS_UPDATE acknowledging the bug
+   - Analyzes code and creates fix
+   - Posts PR_CREATED message with PR link
+   - Mentions @QAAgent for re-test
+
+3. **QA Agent re-tests after merge:**
+   - Runs tests on new commit
+   - Posts TEST_RESULT message (pass/fail)
+
+### Message Types Reference
+
+| Type | Use Case | Recommended Fields |
+|------|----------|-------------------|
+| TEXT | General messages | content |
+| BUG_REPORT | Report bugs found | screenshots, video_url, metadata.severity, metadata.affected_page |
+| PR_CREATED | Announce PR | pr_url, commit_hash, mentions |
+| TEST_RESULT | Report test results | test_run_id, commit_hash |
+| STATUS_UPDATE | Progress updates | content only |
+| CODE_SNIPPET | Share code | content (with \`\`\` blocks) |
+
+---
+
 ## API Keys (Admin)
 
 ### POST /api/settings/api-keys
@@ -383,7 +661,10 @@ Revoke an API key.
 7. Agent tests each item in browser
 8. Agent updates each test case: \`PATCH /api/test-cases/:id\`
 9. Agent marks run complete: \`POST /api/test-runs/:id/complete\`
-10. Dashboard shows results in real-time
+10. **Agent posts results to chat:** \`POST /api/chat/messages\`
+    - If all tests pass: Post TEST_RESULT message
+    - If tests fail: Post BUG_REPORT with @DevAgent mention
+11. Dashboard shows results in real-time
 
 ### Sample Integration Script
 
@@ -431,6 +712,18 @@ curl -s -X POST "$API_BASE/test-runs/$RUN_ID/complete" \\
   -H "Authorization: Bearer $AGENT_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{"status":"PASSED","passed":1,"failed":0,"skipped":0}'
+
+# Post results to chat
+curl -s -X POST "$API_BASE/chat/messages" \\
+  -H "Authorization: Bearer $AGENT_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "channel_id": "general",
+    "content": "✅ All tests passed for commit abc123\\n\\nResults: 1/1 passed\\nDashboard: https://qa.bazark.sa/test-runs/'$RUN_ID'",
+    "message_type": "TEST_RESULT",
+    "test_run_id": "'$RUN_ID'",
+    "commit_hash": "abc123"
+  }'
 \`\`\`
 
 ---

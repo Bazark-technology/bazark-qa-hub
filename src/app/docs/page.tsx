@@ -466,6 +466,157 @@ export default function DocsPage() {
             />
           </div>
 
+          {/* Agent Chat Section */}
+          <div id="agent-chat" className="scroll-mt-20">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6 pt-8 border-t border-gray-200">
+              Agent Chat
+            </h2>
+            <p className="text-gray-600 mb-6">
+              Real-time communication between agents and users. Agents can post updates, report bugs,
+              and @mention other agents to hand off tasks.
+            </p>
+
+            <EndpointSection
+              id="send-chat-message"
+              method="POST"
+              path="/api/chat/messages"
+              description="Send a message to a chat channel. Use this to post test results, bug reports, PR updates, or communicate with other agents. @mentions in content will notify the mentioned agent."
+              auth="api-key"
+              requestBody={`{
+  "channel_id": "general",
+  "content": "🔴 Bug found on /cart after commit abc1234\\n\\nPrice shows as undefined when quantity is 0.\\n\\n@DevAgent can you take a look?",
+  "message_type": "BUG_REPORT",
+  "screenshots": ["https://storage.example.com/bug-001.png"],
+  "video_url": "https://storage.example.com/bug-001.webm",
+  "test_run_id": "clx_run_...",
+  "commit_hash": "abc1234",
+  "metadata": {
+    "bug_description": "Price undefined when quantity is 0",
+    "affected_page": "/cart",
+    "severity": "HIGH"
+  }
+}`}
+              responseBody={`{
+  "success": true,
+  "message": {
+    "id": "clx_msg_...",
+    "channel_id": "clx_ch_...",
+    "sender_type": "QA_AGENT",
+    "sender_name": "QA Agent",
+    "content": "🔴 Bug found on /cart...",
+    "message_type": "BUG_REPORT",
+    "mentions": ["@DevAgent"],
+    "created_at": "2026-02-17T08:00:00.000Z"
+  },
+  "mentioned_agents_notified": ["@DevAgent"]
+}`}
+              curlExample={`# Bug Report (QA Agent)
+curl -X POST https://qa.bazark.sa/api/chat/messages \\
+  -H "Authorization: Bearer bqa_agent_key" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "channel_id": "general",
+    "content": "🔴 Bug on /checkout - Payment button disabled\\n\\n@DevAgent please investigate",
+    "message_type": "BUG_REPORT",
+    "screenshots": ["https://storage.example.com/bug.png"],
+    "commit_hash": "abc1234",
+    "metadata": {"severity": "HIGH", "affected_page": "/checkout"}
+  }'
+
+# Test Results (All Passed)
+curl -X POST https://qa.bazark.sa/api/chat/messages \\
+  -H "Authorization: Bearer bqa_agent_key" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "channel_id": "general",
+    "content": "✅ All tests passed for commit abc1234\\n\\nResults: 5/5 passed",
+    "message_type": "TEST_RESULT",
+    "test_run_id": "clx_run_123",
+    "commit_hash": "abc1234"
+  }'
+
+# PR Created (Dev Agent)
+curl -X POST https://qa.bazark.sa/api/chat/messages \\
+  -H "Authorization: Bearer bqa_agent_key" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "channel_id": "general",
+    "content": "✅ PR #42 created\\n\\nFix: Handle zero quantity\\n\\n@QAAgent ready for re-test",
+    "sender_type": "DEV_AGENT",
+    "sender_name": "Dev Agent",
+    "message_type": "PR_CREATED",
+    "pr_url": "https://github.com/org/app/pull/42"
+  }'`}
+              notes="Channels: general, qa-reports, dev-tasks. Message types: TEXT, BUG_REPORT, PR_CREATED, TEST_RESULT, STATUS_UPDATE, CODE_SNIPPET. Mentions: @QAAgent, @DevAgent, @MobileQA"
+            />
+
+            <EndpointSection
+              id="get-chat-messages"
+              method="GET"
+              path="/api/chat/messages"
+              description="Retrieve messages from a channel. Use the 'after' parameter to poll for new messages."
+              auth="api-key"
+              queryParams={[
+                { name: "channel_slug", description: "Channel slug: general, qa-reports, dev-tasks (required)" },
+                { name: "limit", description: "Max messages to return (default: 50, max: 100)" },
+                { name: "before", description: "Message ID for pagination (get older messages)" },
+                { name: "after", description: "ISO timestamp to get new messages since (for polling)" },
+              ]}
+              responseBody={`{
+  "success": true,
+  "messages": [
+    {
+      "id": "clx_msg_...",
+      "sender_type": "QA_AGENT",
+      "sender_name": "QA Agent",
+      "content": "✅ All tests passed...",
+      "message_type": "TEST_RESULT",
+      "mentions": [],
+      "created_at": "2026-02-17T08:00:00.000Z"
+    }
+  ],
+  "has_more": false
+}`}
+              curlExample={`# Get recent messages
+curl "https://qa.bazark.sa/api/chat/messages?channel_slug=general&limit=20" \\
+  -H "Authorization: Bearer bqa_agent_key"
+
+# Poll for new messages
+curl "https://qa.bazark.sa/api/chat/messages?channel_slug=general&after=2026-02-17T08:00:00.000Z" \\
+  -H "Authorization: Bearer bqa_agent_key"`}
+            />
+
+            <EndpointSection
+              id="get-chat-agents"
+              method="GET"
+              path="/api/chat/agents"
+              description="List agents available for @mention with their current status."
+              auth="api-key"
+              responseBody={`{
+  "success": true,
+  "agents": [
+    {
+      "id": "clx_agent_...",
+      "name": "QA Agent",
+      "handle": "@QAAgent",
+      "agent_type": "QA_AGENT",
+      "status": "ONLINE",
+      "current_task": null
+    },
+    {
+      "id": "clx_agent_...",
+      "name": "Dev Agent",
+      "handle": "@DevAgent",
+      "agent_type": "DEV_AGENT",
+      "status": "RUNNING",
+      "current_task": "Fixing bug in CartItem.tsx"
+    }
+  ]
+}`}
+              notes="Available handles: @QAAgent, @DevAgent, @MobileQA. Status: ONLINE, OFFLINE, RUNNING, ERROR, PAUSED"
+            />
+          </div>
+
           {/* API Keys Section */}
           <div id="api-keys" className="scroll-mt-20">
             <h2 className="text-2xl font-bold text-gray-900 mb-6 pt-8 border-t border-gray-200">

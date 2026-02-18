@@ -47,6 +47,15 @@ const tocItems: TocItem[] = [
     children: [{ id: "update-test-case", label: "Update Test Case" }],
   },
   {
+    id: "agent-chat",
+    label: "Agent Chat",
+    children: [
+      { id: "send-chat-message", label: "Send Message" },
+      { id: "get-chat-messages", label: "Get Messages" },
+      { id: "get-chat-agents", label: "Get Agents" },
+    ],
+  },
+  {
     id: "api-keys",
     label: "API Keys",
     children: [
